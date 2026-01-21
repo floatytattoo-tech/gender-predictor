@@ -12,10 +12,11 @@ import datetime
 st.set_page_config(page_title="Gender Predictor", page_icon="👶")
 st.title("👶 Baby Gender Predictor")
 
-# --- GOOGLE DRIVE SETUP ---
-# Make sure your 'google-credentials.json' is still in your GitHub folder!
-SHARED_FOLDER_ID = "YOUR_FOLDER_ID_HERE" # Put your folder ID back here
+# --- CONFIGURATION ---
+# Replace this with the ID of your 'Ultrasound_Data' folder
+SHARED_FOLDER_ID = "YOUR_FOLDER_ID_HERE" 
 
+# --- GOOGLE DRIVE FUNCTION ---
 def save_to_drive(img_bytes, filename):
     try:
         creds = service_account.Credentials.from_service_account_info(
@@ -36,24 +37,24 @@ def save_to_drive(img_bytes, filename):
 def load_model():
     return tf.keras.models.load_model('gender_predictor.h5', compile=False)
 
-model = load_model()
+with st.spinner('Waking up the AI...'):
+    model = load_model()
 
 # --- MAIN APP ---
-file = st.file_uploader("Upload Ultrasound Image", type=["jpg", "png", "jpeg"])
+file = st.file_uploader("Upload an ultrasound photo...", type=["jpg", "png", "jpeg"])
 
 if file is not None:
+    # Load and show original image
     image = Image.open(file).convert('RGB')
+    st.image(image, caption='Original Upload', use_container_width=True)
     
-    # --- ENHANCED PREPROCESSING ---
+    # --- PREPROCESSING FOR AI ---
     enhancer = ImageEnhance.Contrast(image)
-    image_processed = enhancer.enhance(1.5)
-    image_processed = ImageOps.grayscale(image_processed).convert('RGB')
+    processed_img = enhancer.enhance(1.5)
+    processed_img = ImageOps.grayscale(processed_img).convert('RGB')
     
-    st.image(image, caption='Uploaded Ultrasound', use_container_width=True)
-    
-    # Resize & Normalize
     size = (160, 160)
-    image_resized = ImageOps.fit(image_processed, size, Image.Resampling.LANCZOS)
+    image_resized = ImageOps.fit(processed_img, size, Image.Resampling.LANCZOS)
     img_array = np.asarray(image_resized).astype('float32') / 255.0
     img_reshape = np.expand_dims(img_array, axis=0)
     
@@ -61,8 +62,7 @@ if file is not None:
     prediction = model.predict(img_reshape)
     score = float(prediction[0][0])
     
-    # --- LOGIC ---
-    # Based on our last test (where 0.44 was a BOY), we use this mapping:
+    # --- DYNAMIC LABELS ---
     if score < 0.5:
         result_text = "BOY"
         result_emoji = "💙"
@@ -73,34 +73,36 @@ if file is not None:
         confidence = score
 
     st.divider()
-    st.header(f"Result: {result_text} {result_emoji}")
+    st.header(f"AI Result: {result_text} {result_emoji}")
     st.write(f"Confidence: {confidence:.1%}")
     st.caption(f"Raw AI Score: {score:.4f}")
 
-    # --- SAVE TO DRIVE ---
+    # --- PREPARE IMAGE BYTES ---
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"{timestamp}_{result_text}_{confidence:.0%}.png"
-    
     buf = io.BytesIO()
     image.save(buf, format="PNG")
+    img_bytes = buf.getvalue()
     
-    if save_to_drive(buf.getvalue(), file_name):
-        st.success("Result saved to Google Drive! ✅")
-st.divider()
-    st.write("### 🛠️ Help Train the AI")
-    st.write("Was the prediction wrong? Click below to save the correct label.")
+    # --- AUTO-SAVE RESULT ---
+    auto_filename = f"PREDICTED_{result_text}_{timestamp}.png"
+    if save_to_drive(img_bytes, auto_filename):
+        st.success("Prediction logged to Drive ✅")
+
+    # --- CORRECTION BUTTONS ---
+    st.divider()
+    st.subheader("🛠️ Correction & Training")
+    st.write("If the AI got it wrong, click the correct button below:")
 
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("It's actually a BOY 💙"):
-            # Saves with a "CORRECTED" prefix so you can find it easily
+        if st.button("Actually a BOY 💙"):
             correction_name = f"CORRECTED_BOY_{timestamp}.png"
-            if save_to_drive(buf.getvalue(), correction_name):
-                st.success("Correction saved! Thank you for helping the AI learn. 🙏")
+            if save_to_drive(img_bytes, correction_name):
+                st.info("Marked as BOY. Thank you! 🙏")
 
     with col2:
-        if st.button("It's actually a GIRL 🩷"):
+        if st.button("Actually a GIRL 🩷"):
             correction_name = f"CORRECTED_GIRL_{timestamp}.png"
-            if save_to_drive(buf.getvalue(), correction_name):
-                st.success("Correction saved! Thank you for helping the AI learn. 🙏")
+            if save_to_drive(img_bytes, correction_name):
+                st.info("Marked as GIRL. Thank you! 🙏")
