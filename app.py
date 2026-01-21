@@ -9,7 +9,6 @@ import io
 import datetime
 
 # --- SETTINGS ---
-st.set_option('deprecation.showfileUploaderEncoding', False)
 st.title("👶 Baby Gender Predictor")
 st.write("Upload an ultrasound image, and the AI will predict the gender!")
 
@@ -80,6 +79,5 @@ if file is not None:
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     save_name = f"{timestamp}_{label}.png"
     
-    # This is the line that triggers the green message
     if upload_to_drive(image, save_name):
         st.success("Image saved to database! ✅")
