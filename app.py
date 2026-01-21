@@ -48,6 +48,17 @@ if file is not None:
     # 1. Load Original Image
     image = Image.open(file).convert('RGB')
     st.image(image, caption='Uploaded Ultrasound', use_container_width=True)
+   # --- NEW VALIDATION SECTION ---
+    width, height = image.size
+    aspect_ratio = width / height
+    
+    if aspect_ratio > 1.2 or aspect_ratio < 0.8:
+        st.warning("⚠️ Image is not square! Please crop to a square around the baby's bottom for better accuracy.")
+    
+    if width < 200:
+        st.error("🚫 Image resolution is too low.")
+        st.stop() 
+    # ------------------------------
     
     # 2. AI Preprocessing (Contrast + Grayscale)
     enhancer = ImageEnhance.Contrast(image)
