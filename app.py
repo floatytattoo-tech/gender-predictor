@@ -86,3 +86,21 @@ if file is not None:
     
     if save_to_drive(buf.getvalue(), file_name):
         st.success("Result saved to Google Drive! ✅")
+st.divider()
+    st.write("### 🛠️ Help Train the AI")
+    st.write("Was the prediction wrong? Click below to save the correct label.")
+
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("It's actually a BOY 💙"):
+            # Saves with a "CORRECTED" prefix so you can find it easily
+            correction_name = f"CORRECTED_BOY_{timestamp}.png"
+            if save_to_drive(buf.getvalue(), correction_name):
+                st.success("Correction saved! Thank you for helping the AI learn. 🙏")
+
+    with col2:
+        if st.button("It's actually a GIRL 🩷"):
+            correction_name = f"CORRECTED_GIRL_{timestamp}.png"
+            if save_to_drive(buf.getvalue(), correction_name):
+                st.success("Correction saved! Thank you for helping the AI learn. 🙏")
