@@ -14,7 +14,7 @@ st.title("👶 Baby Gender Predictor")
 
 # --- CONFIGURATION ---
 # Replace this with the ID of your 'Ultrasound_Data' folder
-SHARED_FOLDER_ID = "YOUR_FOLDER_ID_HERE" 
+SHARED_FOLDER_ID = "13kqP6xYq8BJfW9ofuS2eP_if8sWb8GGK" 
 
 # --- GOOGLE DRIVE FUNCTION ---
 def save_to_drive(img_bytes, filename):
