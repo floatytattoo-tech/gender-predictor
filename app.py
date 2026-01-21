@@ -1,45 +1,85 @@
 import streamlit as st
 import tensorflow as tf
-from tensorflow.keras.preprocessing import image
+from PIL import Image, ImageOps
 import numpy as np
-from PIL import Image
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+import io
+import datetime
 
-st.set_page_config(page_title="Gender Predictor", page_icon="👶")
-st.title("👶 Ultrasound Gender Predictor")
-st.write("Powered by MobileNetV2 Transfer Learning")
+# --- SETTINGS ---
+st.set_option('deprecation.showfileUploaderEncoding', False)
+st.title("👶 Baby Gender Predictor")
+st.write("Upload an ultrasound image, and the AI will predict the gender!")
 
+# --- GOOGLE DRIVE FUNCTION ---
+def upload_to_drive(file_obj, filename):
+    try:
+        # Load credentials from Streamlit Secrets
+        gcp_creds = st.secrets["gcp_service_account"]
+        creds = service_account.Credentials.from_service_account_info(gcp_creds)
+        service = build('drive', 'v3', credentials=creds)
+        
+        # Search for the folder
+        results = service.files().list(
+            q="name='Ultrasound_Data' and mimeType='application/vnd.google-apps.folder'",
+            fields="files(id, name)").execute()
+        items = results.get('files', [])
+        folder_id = items[0]['id'] if items else None
+        
+        # Prepare file
+        file_metadata = {'name': filename}
+        if folder_id:
+            file_metadata['parents'] = [folder_id]
+            
+        fh = io.BytesIO()
+        file_obj.save(fh, format='PNG')
+        fh.seek(0)
+        media = MediaIoBaseUpload(fh, mimetype='image/png')
+        
+        # Upload
+        service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        return True
+    except Exception as e:
+        st.error(f"Error saving to Drive: {e}")
+        return False
+
+# --- LOAD MODEL ---
 @st.cache_resource
-def load_my_model():
+def load_model():
     return tf.keras.models.load_model('gender_predictor.h5')
 
-model = load_my_model()
+with st.spinner('Loading Model...'):
+    model = load_model()
 
-uploaded_file = st.file_uploader("Choose an ultrasound image...", type=["jpg", "jpeg", "png"])
+# --- MAIN APP ---
+file = st.file_uploader("Choose an ultrasound photo...", type=["jpg", "png", "jpeg"])
 
-if uploaded_file is not None:
-    image_display = Image.open(uploaded_file)
-    st.image(image_display, caption='Uploaded Image', width=300)
+if file is not None:
+    image = Image.open(file).convert('RGB')
+    st.image(image, caption='Uploaded Image', use_container_width=True)
     
-    st.write("Analyzing...")
-
-    # NEW PROCESSING FOR MOBILENET (RGB, 160x160)
-    if image_display.mode != "RGB":
-        image_display = image_display.convert("RGB")
-        
-    img = image_display.resize((160, 160))
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array /= 255.0
-
-    prediction = model.predict(img_array)
+    # Predict
+    size = (160, 160)
+    image_resized = ImageOps.fit(image, size, Image.Resampling.LANCZOS)
+    img_array = np.asarray(image_resized) / 255.0
+    img_reshape = np.expand_dims(img_array, axis=0)
+    
+    prediction = model.predict(img_reshape)
     confidence = prediction[0][0]
-
-    st.divider()
+    
     if confidence > 0.5:
-        st.success(f"### Prediction: MALE 💙")
-        st.progress(int(confidence * 100))
-        st.write(f"**Confidence:** {confidence:.1%}")
+        st.header(f"It's a BOY! 💙 ({confidence:.0%})")
+        label = "BOY"
     else:
-        st.success(f"### Prediction: FEMALE 🩷")
-        st.progress(int((1-confidence) * 100))
-        st.write(f"**Confidence:** {(1-confidence):.1%}")
+        st.header(f"It's a GIRL! 🩷 ({(1-confidence):.0%})")
+        label = "GIRL"
+
+    # SAVE TO DRIVE
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    save_name = f"{timestamp}_{label}.png"
+    
+    # This is the line that triggers the green message
+    if upload_to_drive(image, save_name):
+        st.success("Image saved to database! ✅")
