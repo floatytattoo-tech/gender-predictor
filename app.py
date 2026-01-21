@@ -12,6 +12,10 @@ import datetime
 st.title("👶 Baby Gender Predictor")
 st.write("Upload an ultrasound image, and the AI will predict the gender!")
 
+# --- CONFIGURATION ---
+# PASTE YOUR FOLDER ID BELOW (Keep the quotes!)
+PARENT_FOLDER_ID = "13kqP6xYq8BJfW9ofuS2eP_if8sWb8GGK"
+
 # --- GOOGLE DRIVE FUNCTION ---
 def upload_to_drive(file_obj, filename):
     try:
@@ -20,17 +24,11 @@ def upload_to_drive(file_obj, filename):
         creds = service_account.Credentials.from_service_account_info(gcp_creds)
         service = build('drive', 'v3', credentials=creds)
         
-        # Search for the folder
-        results = service.files().list(
-            q="name='Ultrasound_Data' and mimeType='application/vnd.google-apps.folder'",
-            fields="files(id, name)").execute()
-        items = results.get('files', [])
-        folder_id = items[0]['id'] if items else None
-        
-        # Prepare file
-        file_metadata = {'name': filename}
-        if folder_id:
-            file_metadata['parents'] = [folder_id]
+        # Prepare file metadata with the specific parent folder
+        file_metadata = {
+            'name': filename,
+            'parents': [PARENT_FOLDER_ID]
+        }
             
         fh = io.BytesIO()
         file_obj.save(fh, format='PNG')
