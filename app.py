@@ -2,80 +2,50 @@ import streamlit as st
 import tensorflow as tf
 from PIL import Image, ImageOps
 import numpy as np
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
-import io
-import datetime
 
 # --- SETTINGS ---
+st.set_page_config(page_title="Gender Predictor", page_icon="👶")
 st.title("👶 Baby Gender Predictor")
-st.write("Upload an ultrasound image, and the AI will predict the gender!")
-
-# --- CONFIGURATION ---
-# PASTE YOUR FOLDER ID BELOW (Keep the quotes!)
-PARENT_FOLDER_ID = "13kqP6xYq8BJfW9ofuS2eP_if8sWb8GGK"
-
-# --- GOOGLE DRIVE FUNCTION ---
-def upload_to_drive(file_obj, filename):
-    try:
-        # Load credentials from Streamlit Secrets
-        gcp_creds = st.secrets["gcp_service_account"]
-        creds = service_account.Credentials.from_service_account_info(gcp_creds)
-        service = build('drive', 'v3', credentials=creds)
-        
-        # Prepare file metadata with the specific parent folder
-        file_metadata = {
-            'name': filename,
-            'parents': [PARENT_FOLDER_ID]
-        }
-            
-        fh = io.BytesIO()
-        file_obj.save(fh, format='PNG')
-        fh.seek(0)
-        media = MediaIoBaseUpload(fh, mimetype='image/png')
-        
-        # Upload
-        service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        return True
-    except Exception as e:
-        st.error(f"Error saving to Drive: {e}")
-        return False
 
 # --- LOAD MODEL ---
 @st.cache_resource
 def load_model():
-    return tf.keras.models.load_model('gender_predictor.h5')
+    # This loads your specific model file
+    return tf.keras.models.load_model('gender_predictor.h5', compile=False)
 
-with st.spinner('Loading Model...'):
-    model = load_model()
+model = load_model()
 
 # --- MAIN APP ---
-file = st.file_uploader("Choose an ultrasound photo...", type=["jpg", "png", "jpeg"])
+file = st.file_uploader("Upload Ultrasound Image", type=["jpg", "png", "jpeg"])
 
 if file is not None:
     image = Image.open(file).convert('RGB')
     st.image(image, caption='Uploaded Image', use_container_width=True)
     
-    # Predict
+    # --- IMAGE PREPROCESSING (The "Fix") ---
     size = (160, 160)
+    # 1. Resize and crop to the exact center
     image_resized = ImageOps.fit(image, size, Image.Resampling.LANCZOS)
-    img_array = np.asarray(image_resized) / 255.0
+    
+    # 2. Convert to numbers and NORMALIZE (This is usually why it gets stuck)
+    img_array = np.asarray(image_resized).astype('float32') / 255.0
+    
+    # 3. Shape it for the AI (Batch size, Height, Width, Channels)
     img_reshape = np.expand_dims(img_array, axis=0)
     
+    # --- PREDICTION ---
     prediction = model.predict(img_reshape)
-    confidence = prediction[0][0]
+    # Get the raw number (usually between 0 and 1)
+    score = float(prediction[0][0])
     
-    if confidence > 0.5:
-        st.header(f"It's a BOY! 💙 ({confidence:.0%})")
-        label = "BOY"
+    st.divider()
+    
+    # Check the score. If the model is stuck, it will show a score of exactly 0.5 or 0.0.
+    if score > 0.5:
+        st.header(f"Result: BOY 💙")
+        st.write(f"Confidence: {score:.1%}")
     else:
-        st.header(f"It's a GIRL! 🩷 ({(1-confidence):.0%})")
-        label = "GIRL"
-
-    # SAVE TO DRIVE
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    save_name = f"{timestamp}_{label}.png"
-    
-    if upload_to_drive(image, save_name):
-        st.success("Image saved to database! ✅")
+        st.header(f"Result: GIRL 🩷")
+        st.write(f"Confidence: {(1-score):.1%}")
+        
+    st.caption(f"Raw AI Score: {score:.4f}")
