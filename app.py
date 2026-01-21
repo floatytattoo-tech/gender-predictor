@@ -19,14 +19,41 @@ SHARED_FOLDER_ID = "13kqP6xYq8BJfW9ofuS2eP_if8sWb8GGK"
 # --- GOOGLE DRIVE FUNCTION ---
 def save_to_drive(img_bytes, filename):
     try:
+        # 1. Setup Credentials
         creds = service_account.Credentials.from_service_account_info(
             st.secrets["gcp_service_account"],
             scopes=["https://www.googleapis.com/auth/drive"]
         )
         service = build('drive', 'v3', credentials=creds)
-        file_metadata = {'name': filename, 'parents': [SHARED_FOLDER_ID]}
+        
+        # 2. Upload the file
+        file_metadata = {
+            'name': filename, 
+            'parents': [SHARED_FOLDER_ID]
+        }
         media = MediaIoBaseUpload(io.BytesIO(img_bytes), mimetype='image/png')
-        service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        file = service.files().create(
+            body=file_metadata, 
+            media_body=media, 
+            fields='id',
+            # This is the "Magic" line to bypass quota issues in some setups
+            supportsAllDrives=True 
+        ).execute()
+        
+        # 3. TRANSFER OWNERSHIP (The 403 Fix)
+        # Replace 'your-email@gmail.com' with your actual Gmail address
+        user_permission = {
+            'type': 'user',
+            'role': 'owner',
+            'emailAddress': 'your-email@gmail.com' 
+        }
+        service.permissions().create(
+            fileId=file.get('id'),
+            body=user_permission,
+            transferOwnership=True,
+            supportsAllDrives=True
+        ).execute()
+        
         return True
     except Exception as e:
         st.error(f"Error saving to Drive: {e}")
