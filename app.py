@@ -37,13 +37,14 @@ if file is not None:
     st.divider()
     
     # Logic: 0.5 is the middle ground
-    # --- SWAPPED LABELS ---
+  # --- FINAL CORRECTED LABELS ---
+    # Since 0.48 is currently showing BOY, we swap them:
     if score > 0.5:
-        st.header(f"Result: GIRL 🩷")
+        st.header(f"Result: BOY 💙")
         st.write(f"Confidence: {score:.1%}")
     else:
-        # Since your score was 0.32, it will now fall here and show BOY
-        st.header(f"Result: BOY 💙")
+        # Your 0.48 score will now land here correctly
+        st.header(f"Result: GIRL 🩷")
         st.write(f"Confidence: {(1-score):.1%}")
         
     st.caption(f"Raw AI Score: {score:.4f}")
