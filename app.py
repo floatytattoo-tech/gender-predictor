@@ -12,27 +12,6 @@ import datetime
 st.set_page_config(page_title="Gender Predictor", page_icon="👶")
 st.title("👶 Baby Gender Predictor")
 
-# --- CONFIGURATION ---
-# Replace this with your Google Drive folder ID
-SHARED_FOLDER_ID = "YOUR_FOLDER_ID_HERE" 
-
-# --- GOOGLE DRIVE FUNCTION ---
-def save_to_drive(img_bytes, filename):
-    try:
-        creds = service_account.Credentials.from_service_account_info(
-            st.secrets["gcp_service_account"],
-            scopes=["https://www.googleapis.com/auth/drive"]
-        )
-        service = build('drive', 'v3', credentials=creds)
-        file_metadata = {'name': filename, 'parents': [SHARED_FOLDER_ID]}
-        media = MediaIoBaseUpload(io.BytesIO(img_bytes), mimetype='image/png')
-        service.files().create(body=file_metadata, media_body=media).execute()
-        return True
-    except Exception as e:
-        # If it still shows 403, Google just needs more time to process your billing
-        st.error(f"Drive Sync Status: {e}")
-        return False
-
 # --- LOAD MODEL ---
 @st.cache_resource
 def load_model():
