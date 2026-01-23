@@ -38,7 +38,6 @@ def save_to_drive(img_bytes, filename):
 def load_model():
     return tf.keras.models.load_model('gender_predictor.h5', compile=False)
 
-with st.spinner('Waking up the AI...'):
 model = tf.keras.models.load_model('gender_predictor_v3.h5', compile=False)
 
 # --- MAIN APP ---
