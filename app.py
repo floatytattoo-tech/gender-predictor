@@ -39,7 +39,7 @@ def load_model():
     return tf.keras.models.load_model('gender_predictor.h5', compile=False)
 
 with st.spinner('Waking up the AI...'):
-    mmodel = tf.keras.models.load_model('gender_predictor_v3.h5', compile=False)
+    model = tf.keras.models.load_model('gender_predictor_v3.h5', compile=False)
 
 # --- MAIN APP ---
 file = st.file_uploader("Upload an ultrasound photo...", type=["jpg", "png", "jpeg"])
