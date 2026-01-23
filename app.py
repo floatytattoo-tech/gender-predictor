@@ -15,7 +15,7 @@ from googleapiclient.http import MediaIoBaseUpload
 st.set_page_config(page_title="Gender Predictor", page_icon="👶")
 # --- CONFIGURATION ---
 # Replace the text inside the quotes with your real Folder ID
-SHARED_FOLDER_ID = SHARED_FOLDER_ID = "1UU6_GMp9SX9i5Z5GMyp99-e_lpJWzop4"
+SHARED_FOLDER_ID = SHARED_FOLDER_ID = "1wdZ3t31TP9bzaJ-Fs0Zbb2m7Q_vLSKey"
 
 # --- GOOGLE DRIVE FUNCTION ---
 def save_to_drive(img_bytes, filename):
