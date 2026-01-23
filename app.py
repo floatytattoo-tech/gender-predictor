@@ -108,7 +108,7 @@ if file is not None:
 
     # --- SAVE TO DRIVE LOGIC (Automatic) ---
         # We need to define timestamp here so the buttons below can use it!
-        timestamp = int(time.time())
+    timestamp = int(time.time())
         save_filename = f"PREDICTION_{res_text}_{timestamp}.png"
 
         # This tries to save the prediction automatically
