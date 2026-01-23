@@ -2,17 +2,45 @@ import streamlit as st
 import tensorflow as tf
 from PIL import Image, ImageOps, ImageEnhance
 import numpy as np
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
 import io
-import datetime
+import time  # Added this for the timestamp
+
+# Google Drive Imports
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
 # --- SETTINGS ---
 st.set_page_config(page_title="Gender Predictor", page_icon="👶")
+# --- CONFIGURATION ---
+# Replace the text inside the quotes with your real Folder ID
+SHARED_FOLDER_ID = SHARED_FOLDER_ID = "1UU6_GMp9SX9i5Z5GMyp99-e_lpJWzop4"
+
+# --- GOOGLE DRIVE FUNCTION ---
+def save_to_drive(img_bytes, filename):
+    try:
+        # Check if secrets exist
+        if "gcp_service_account" not in st.secrets:
+            st.warning("⚠️ Google Drive keys not found in Secrets. Image NOT saved.")
+            return False
+
+        # Authenticate with Google
+        creds = service_account.Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=["https://www.googleapis.com/auth/drive"]
+        )
+        service = build('drive', 'v3', credentials=creds)
+
+        # Upload file
+        file_metadata = {'name': filename, 'parents': [SHARED_FOLDER_ID]}
+        media = MediaIoBaseUpload(io.BytesIO(img_bytes), mimetype='image/png')
+        service.files().create(body=file_metadata, media_body=media).execute()
+        return True
+
+    except Exception as e:
+        st.error(f"⚠️ Drive Sync Error: {e}")
+        return False
+        
 st.title("👶 Baby Gender Predictor")
 
 # --- LOAD MODEL ---
@@ -77,7 +105,20 @@ if file is not None:
     st.divider()
     st.subheader("🛠️ Correction & Training")
     st.write("Help train the AI by clicking the correct gender if it was wrong:")
-    
+
+    # --- SAVE TO DRIVE LOGIC (Automatic) ---
+        # We need to define timestamp here so the buttons below can use it!
+        timestamp = int(time.time())
+        save_filename = f"PREDICTION_{res_text}_{timestamp}.png"
+
+        # This tries to save the prediction automatically
+        if save_to_drive(img_data, save_filename):
+            st.success("✅ Image saved to Training Data!")
+
+        # --- HEADERS FOR THE BUTTONS ---
+        st.divider()
+        st.subheader("🛠️ Correction & Training")
+        st.write("Help train the AI by clicking the correct gender if it was wrong:")
     c1, c2 = st.columns(2)
     with c1:
         if st.button("Actually a BOY 💙"):
