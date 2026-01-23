@@ -69,10 +69,6 @@ if file is not None:
     buf = io.BytesIO()
     image.save(buf, format="PNG")
     img_data = buf.getvalue()
-    
-    # 6. Automatic Log
-    if save_to_drive(img_data, f"PREDICTED_{res_text}_{timestamp}.png"):
-        st.success("Log saved to Google Drive! ✅")
 
     # 7. Correction Buttons
     st.divider()
