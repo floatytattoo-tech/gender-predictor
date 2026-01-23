@@ -117,8 +117,8 @@ if file is not None:
 
         # --- HEADERS FOR THE BUTTONS ---
     st.divider()
-        st.subheader("🛠️ Correction & Training")
-        st.write("Help train the AI by clicking the correct gender if it was wrong:")
+    st.subheader("🛠️ Correction & Training")
+    st.write("Help train the AI by clicking the correct gender if it was wrong:")
     c1, c2 = st.columns(2)
     with c1:
         if st.button("Actually a BOY 💙"):
