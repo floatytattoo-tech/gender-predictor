@@ -116,7 +116,7 @@ if file is not None:
             st.success("✅ Image saved to Training Data!")
 
         # --- HEADERS FOR THE BUTTONS ---
-        st.divider()
+    st.divider()
         st.subheader("🛠️ Correction & Training")
         st.write("Help train the AI by clicking the correct gender if it was wrong:")
     c1, c2 = st.columns(2)
