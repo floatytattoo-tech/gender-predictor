@@ -37,6 +37,7 @@ def save_to_drive(img_bytes, filename):
 @st.cache_resource
 def load_model():
     return tf.keras.models.load_model('gender_predictor.h5', compile=False)
+    
 
 model = tf.keras.models.load_model('gender_predictor_v3.h5', compile=False)
 
