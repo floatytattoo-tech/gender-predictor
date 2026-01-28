@@ -111,11 +111,10 @@ if file is not None:
     timestamp = int(time.time())
         
         # 7. Correction & Training Section
-        st.divider()
-        st.subheader("🛠️ Correction & Training")
-        st.write("Help train the AI! If the prediction was wrong, download the image correctly labeled:")
-
-        c1, c2 = st.columns(2)
+    st.divider()
+    st.subheader("🛠️ Correction & Training")
+    st.write("Help train the AI! If the prediction was wrong, download the image correctly labeled:")
+    c1, c2 = st.columns(2)
         
         with c1:
             # Button for BOY
