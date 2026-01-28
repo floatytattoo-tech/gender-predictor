@@ -107,14 +107,13 @@ if file is not None:
     st.subheader("🛠️ Correction & Training")
     st.write("Help train the AI by clicking the correct gender if it was wrong:")
 
- # --- PREPARE FOR DOWNLOAD ---
-       # --- PREPARE FOR DOWNLOAD ---
-    timestamp = int(time.time())
+     # --- PREPARE FOR DOWNLOAD ---
+        timestamp = int(time.time())
         
         # 7. Correction & Training Section
-    st.divider()
-    st.subheader("🛠️ Correction & Training")
-    st.write("Help train the AI! If the prediction was wrong, download the image correctly labeled:")
+        st.divider()
+        st.subheader("🛠️ Correction & Training")
+        st.write("Help train the AI! If the prediction was wrong, download the image correctly labeled:")
 
         c1, c2 = st.columns(2)
         
