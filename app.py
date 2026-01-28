@@ -107,8 +107,9 @@ if file is not None:
     st.subheader("🛠️ Correction & Training")
     st.write("Help train the AI by clicking the correct gender if it was wrong:")
 
-    # --- PREPARE FOR DOWNLOAD ---
-    if img_data is not None:
+   # --- PREPARE FOR DOWNLOAD ---
+    # Only show these if a file was actually uploaded
+    if uploaded_file is not None:
         timestamp = int(time.time())
         
     st.divider()
@@ -119,7 +120,7 @@ if file is not None:
     with c1:
             st.download_button(
                 label="Actually a BOY 💙",
-                data=img_data.getvalue(),
+                data=uploaded_file.getvalue(),  # Uses the raw file data
                 file_name=f"CORRECTED_BOY_{timestamp}.png",
                 mime="image/png"
             )
@@ -127,8 +128,7 @@ if file is not None:
     with c2:
             st.download_button(
                 label="Actually a GIRL 🩷",
-                data=img_data.getvalue(),
+                data=uploaded_file.getvalue(),  # Uses the raw file data
                 file_name=f"CORRECTED_GIRL_{timestamp}.png",
                 mime="image/png"
             )
-  
