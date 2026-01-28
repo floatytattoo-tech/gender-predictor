@@ -108,6 +108,7 @@ if file is not None:
     st.write("Help train the AI by clicking the correct gender if it was wrong:")
 
  # --- PREPARE FOR DOWNLOAD ---
+       # --- PREPARE FOR DOWNLOAD ---
         timestamp = int(time.time())
         
         # 7. Correction & Training Section
@@ -136,17 +137,3 @@ if file is not None:
             )
             
         st.success("Tip: Downloads are automatically named so you can just drag them into your Training Folder later!")
-
-        # --- HEADERS FOR THE BUTTONS ---
-    st.divider()
-    st.subheader("🛠️ Correction & Training")
-    st.write("Help train the AI by clicking the correct gender if it was wrong:")
-    c1, c2 = st.columns(2)
-    with c1:
-        if st.button("Actually a BOY 💙"):
-            if save_to_drive(img_data, f"CORRECTED_BOY_{timestamp}.png"):
-                st.info("Stored as BOY for training. Thanks! 🙏")
-    with c2:
-        if st.button("Actually a GIRL 🩷"):
-            if save_to_drive(img_data, f"CORRECTED_GIRL_{timestamp}.png"):
-                st.info("Stored as GIRL for training. Thanks! 🙏")
