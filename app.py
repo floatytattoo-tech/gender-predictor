@@ -108,7 +108,7 @@ if file is not None:
     st.write("Help train the AI by clicking the correct gender if it was wrong:")
 
      # --- PREPARE FOR DOWNLOAD ---
-        timestamp = int(time.time())
+    timestamp = int(time.time())
         
         # 7. Correction & Training Section
         st.divider()
