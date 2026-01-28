@@ -107,14 +107,35 @@ if file is not None:
     st.subheader("🛠️ Correction & Training")
     st.write("Help train the AI by clicking the correct gender if it was wrong:")
 
-    # --- SAVE TO DRIVE LOGIC (Automatic) ---
-        # We need to define timestamp here so the buttons below can use it!
-    timestamp = int(time.time())
-    save_filename = f"PREDICTION_{res_text}_{timestamp}.png"
+ # --- PREPARE FOR DOWNLOAD ---
+        timestamp = int(time.time())
+        
+        # 7. Correction & Training Section
+        st.divider()
+        st.subheader("🛠️ Correction & Training")
+        st.write("Help train the AI! If the prediction was wrong, download the image correctly labeled:")
 
-        # This tries to save the prediction automatically
-    if save_to_drive(img_data, save_filename):
-            st.success("✅ Image saved to Training Data!")
+        c1, c2 = st.columns(2)
+        
+        with c1:
+            # Button for BOY
+            st.download_button(
+                label="Actually a BOY 💙 (Download)",
+                data=img_data.getvalue(),
+                file_name=f"CORRECTED_BOY_{timestamp}.png",
+                mime="image/png"
+            )
+
+        with c2:
+            # Button for GIRL
+            st.download_button(
+                label="Actually a GIRL 🩷 (Download)",
+                data=img_data.getvalue(),
+                file_name=f"CORRECTED_GIRL_{timestamp}.png",
+                mime="image/png"
+            )
+            
+        st.success("Tip: Downloads are automatically named so you can just drag them into your Training Folder later!")
 
         # --- HEADERS FOR THE BUTTONS ---
     st.divider()
