@@ -116,7 +116,7 @@ if file is not None:
     st.write("Help train the AI! If the prediction was wrong, download the image correctly labeled:")
     c1, c2 = st.columns(2)
         
-        with c1:
+    with c1:
             # Button for BOY
             st.download_button(
                 label="Actually a BOY 💙 (Download)",
@@ -125,7 +125,7 @@ if file is not None:
                 mime="image/png"
             )
 
-        with c2:
+    with c2:
             # Button for GIRL
             st.download_button(
                 label="Actually a GIRL 🩷 (Download)",
@@ -134,4 +134,4 @@ if file is not None:
                 mime="image/png"
             )
             
-        st.success("Tip: Downloads are automatically named so you can just drag them into your Training Folder later!")
+    st.success("Tip: Downloads are automatically named so you can just drag them into your Training Folder later!")
